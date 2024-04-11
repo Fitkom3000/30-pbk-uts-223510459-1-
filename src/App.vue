@@ -1,85 +1,136 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div class="container">
+    <h1 class="heading">Aplikasi Pengingat Kegiatan</h1>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+    <div class="input-section">
+      <h2 class="section-title">Tambah Kegiatan Baru</h2>
+      <input type="text" v-model="namaKegiatan" placeholder="Nama Kegiatan" class="input-kegiatan">
+      <button @click="tambahKegiatan" class="btn-tambah">Tambah</button>
     </div>
-  </header>
 
-  <RouterView />
+    <div class="list-section">
+      <h2 class="section-title">Daftar Kegiatan</h2>
+      <ul>
+        <li v-for="(kegiatan, index) in filteredKegiatanList" :key="index" class="daftar-kegiatan">
+          <span class="span" :style="{ textDecoration: kegiatan.selesai ? 'line-through' : 'none' }">{{ kegiatan.nama }}</span>
+          <button @click="batalkanKegiatan(index)" class="btn-batalkan">Batalkan</button>
+          <input type="checkbox" v-model="kegiatan.selesai" class="checkbox-selesai">
+        </li>
+      </ul>
+      <button @click="toggleFilter" class="btn-filter" :class="{ active: filterAktif }">Filter Belum Selesai</button>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<style>
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  gap: 20px;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.heading {
+  font-size: 32px;
+  font-weight: bold;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.span {
+  color:#000000;
+}
+.input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.section-title {
+  font-size: 24px;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.input-kegiatan {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  width: 300px;
+  box-sizing: border-box;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+.btn-tambah {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-nav a:first-of-type {
-  border: 0;
+.list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+.daftar-kegiatan {
+  display: top;
+  justify-content: space-between;
+  align-items: left;
+  padding: 8px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+.btn-batalkan, .btn-filter {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.checkbox-selesai {
+  margin-left: 8px;
+}
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.btn-filter.active {
+  background-color: #28a745;
 }
 </style>
+
+<script>
+export default {
+  data() {
+    return {
+      namaKegiatan: '',
+      kegiatanList: [],
+      filterAktif: false,
+    };
+  },
+  computed: {
+    filteredKegiatanList() {
+      if (this.filterAktif) {
+        return this.kegiatanList.filter(kegiatan => !kegiatan.selesai);
+      } else {
+        return this.kegiatanList;
+      }
+    }
+  },
+  methods: {
+    tambahKegiatan() {
+      if (this.namaKegiatan.trim() !== '') {
+        this.kegiatanList.push({ nama: this.namaKegiatan, selesai: false });
+        this.namaKegiatan = '';
+      }
+    },
+    batalkanKegiatan(index) {
+      this.kegiatanList.splice(index, 1);
+    },
+    toggleFilter() {
+      this.filterAktif = !this.filterAktif;
+    },
+  },
+};
+</script>
