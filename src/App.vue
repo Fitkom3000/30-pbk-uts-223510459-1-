@@ -1,136 +1,194 @@
 <template>
-  <div class="container">
-    <h1 class="heading">Aplikasi Pengingat Kegiatan</h1>
+  <div id="app">
+    <header>
+      <nav>
+        <ul style="display: flex;">
+          <li :class="{ 'active-todos': currentView === 'todos' }" @click="switchView('todos')">Todos</li>
+          <li :class="{ 'active-posts': currentView === 'posts' }" @click="switchView('posts')">Post</li>
+        </ul>
+      </nav>
+    </header>
 
-    <div class="input-section">
-      <h2 class="section-title">ToDoList</h2>
-      <input type="text" v-model="namaKegiatan" placeholder="Nama Kegiatan" class="input-kegiatan">
-      <button @click="tambahKegiatan" class="btn-tambah">Tambah</button>
-    </div>
+    <div class="container">
+    <div v-if="currentView === 'todos'">
+      <h2>Todos</h2>
+      <form @submit.prevent="addTodo">
+        <input type="text" v-model="newTodo" placeholder="Tambah kegiatan baru" required>
+        <button @click="confirmAction('Add', index)" type="submit">Tambah</button>
+      </form>
+      <div v-for="(todo, index) in filteredTodos" :key="index">
+        <!-- Menggunakan @click untuk updateTodo -->
+        <input type="checkbox" v-model="todo.completed" @click="updateTodo(index)">
+        <span :class="{ 'completed': todo.completed }">{{ todo.text }}</span>
+        <button @click="confirmAction('Remove', index)">Remove</button>
+      </div>
+      <!-- Tombol filter untuk menampilkan hanya kegiatan yang belum selesai -->
+      <button @click="filterTodos">{{ showCompleted ? 'Filter Belum Selesai' : 'Tampilkan Semua' }}</button>
+      </div>
+      <!-- Bagian lain dari aplikasi -->
+      <div v-else-if="currentView === 'posts'">
+        <h2>Posts</h2>
+        <select v-model="selectedUser" @change="fetchPosts">
+          <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
+        </select>
 
-    <div class="list-section">
-      <h2 class="section-title">Daftar Kegiatan</h2>
-      <ul>
-        <li v-for="(kegiatan, index) in filteredKegiatanList" :key="index" class="daftar-kegiatan">
-          <span class="span" :style="{ textDecoration: kegiatan.selesai ? 'line-through' : 'none' }">{{ kegiatan.nama }}</span>
-          <button @click="batalkanKegiatan(index)" class="btn-batalkan">Batalkan</button>
-          <input type="checkbox" v-model="kegiatan.selesai" class="checkbox-selesai">
-        </li>
-      </ul>
-      <button @click="toggleFilter" class="btn-filter" :class="{ active: filterAktif }">Filter Belum Selesai</button>
+        <div v-if="loading">Loading...</div>
+        <div v-else>
+          <div v-for="post in posts" :key="post.id">
+            <h3>{{ post.title }}</h3>
+            <p class="center-text">{{ post.body }}</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
-
-<style>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 20px;
-  gap: 20px;
-}
-
-.heading {
-  font-size: 32px;
-  font-weight: bold;
-}
-
-.span {
-  color:#000000;
-}
-.input-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.section-title {
-  font-size: 24px;
-}
-
-.input-kegiatan {
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ced4da;
-  width: 300px;
-  box-sizing: border-box;
-}
-
-.btn-tambah {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.list-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.daftar-kegiatan {
-  display: top;
-  justify-content: space-between;
-  align-items: left;
-  padding: 8px;
-  background-color: #ffffff;
-  border-radius: 4px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn-batalkan, .btn-filter {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.checkbox-selesai {
-  margin-left: 8px;
-}
-
-.btn-filter.active {
-  background-color: #28a745;
-}
-</style>
 
 <script>
 export default {
   data() {
     return {
-      namaKegiatan: '',
-      kegiatanList: [],
-      filterAktif: false,
+      todos: [
+        { text: 'Susah banget', completed: false },
+        { text: 'Woila', completed: false }
+      ],
+      newTodo: '',
+      currentView: 'todos',
+      showCompleted: false,
+      users: [],
+      selectedUser: null,
+      posts: [],
+      loading: false
     };
   },
   computed: {
-    filteredKegiatanList() {
-      if (this.filterAktif) {
-        return this.kegiatanList.filter(kegiatan => !kegiatan.selesai);
+    // Menggunakan computed property untuk memfilter kegiatan yang belum selesai
+    filteredTodos() {
+      if (this.showCompleted) {
+        return this.todos;
       } else {
-        return this.kegiatanList;
+        return this.todos.filter(todo => !todo.completed);
       }
     }
   },
+  mounted() {
+    this.fetchUsers();
+  },
   methods: {
-    tambahKegiatan() {
-      if (this.namaKegiatan.trim() !== '') {
-        this.kegiatanList.push({ nama: this.namaKegiatan, selesai: false });
-        this.namaKegiatan = '';
+    switchView(view) {
+      this.currentView = view;
+    },
+    addTodo() {
+      if (this.newTodo.trim() !== '') {
+        this.todos.push({ text: this.newTodo, completed: false });
+        this.newTodo = '';
       }
     },
-    batalkanKegiatan(index) {
-      this.kegiatanList.splice(index, 1);
+    updateTodo(index) {
+      // Memeriksa apakah sudah selesai, jika ya, ubah menjadi tidak selesai
+      if (this.todos[index].completed) {
+        this.todos[index].completed = false;
+      } else {
+        this.todos[index].completed = true;
+      }
     },
-    toggleFilter() {
-      this.filterAktif = !this.filterAktif;
+    removeTodo(index) {
+      this.todos.splice(index, 1);
     },
-  },
+    // Mengubah status tombol filter dan menampilkan semua kegiatan
+    filterTodos() {
+      this.showCompleted = !this.showCompleted;
+    },
+    async fetchUsers() {
+      this.loading = true;
+      try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/users');
+        this.users = await response.json();
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    confirmAction(action, index = null) {
+      let message = '';
+      switch (action) {
+        case 'Remove':
+          message = `Apakah Anda yakin ingin menghapus kegiatan ini?`;
+          break;
+        case 'Add':
+          message = `Apakah Anda yakin ingin menambah kegiatan ini?`;
+          break;
+        default:
+          break;
+      }
+
+      if (window.confirm(message)) {
+        switch (action) {
+          case 'Update':
+            this.updateTodo(index);
+            break;
+          case 'Remove':
+            this.removeTodo(index);
+            break;
+          case 'Filter':
+            this.filterTodos();
+            break;
+          default:
+            break;
+        }
+      }
+    },
+
+    async fetchPosts() {
+      this.loading = true;
+      try {
+        const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${this.selectedUser}`);
+        this.posts = await response.json();
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
 };
 </script>
+
+<style>
+header {
+  background-color: #333;
+  color: white;
+}
+
+nav ul {
+  list-style-type: none;
+  display: flex;
+}
+
+nav ul li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+nav ul li:hover {
+  background-color: #555;
+}
+
+.container {
+  margin-top: 20px;
+}
+
+.completed {
+  text-decoration: line-through;
+}
+
+.active-todos {
+  background-color: rgb(95, 95, 95); /* Warna latar belakang untuk Todos saat aktif */
+}
+.active-posts {
+  background-color: rgb(95, 95, 95); /* Warna latar belakang untuk Post saat aktif */
+}
+
+</style>
