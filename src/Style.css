@@ -1,0 +1,35 @@
+header {
+    background-color: #333;
+    color: white;
+  }
+  
+  nav ul {
+    list-style-type: none;
+    display: flex;
+  }
+  
+  nav ul li {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  nav ul li:hover {
+    background-color: #555;
+  }
+  
+  .container {
+    margin-top: 20px;
+  }
+  
+  .completed {
+    text-decoration: line-through;
+  }
+  
+  .active-todos {
+    background-color: rgb(95, 95, 95);
+  }
+  
+  .active-posts {
+    background-color: rgb(95, 95, 95);
+  }
+  
