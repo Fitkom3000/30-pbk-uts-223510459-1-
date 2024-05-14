@@ -3,7 +3,7 @@
     <h1 class="heading">Aplikasi Pengingat Kegiatan</h1>
 
     <div class="input-section">
-      <h2 class="section-title">Tambah Kegiatan Baru</h2>
+      <h2 class="section-title">ToDoList</h2>
       <input type="text" v-model="namaKegiatan" placeholder="Nama Kegiatan" class="input-kegiatan">
       <button @click="tambahKegiatan" class="btn-tambah">Tambah</button>
     </div>
