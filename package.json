@@ -17,7 +17,7 @@
     "pinia": "^2.1.8-beta.0",
     "quasar": "^2.16.4",
     "vue": "^3.4.21",
-    "vue-router": "^4.4.0",
+    "vue-router": "^4.0.13",
     "vuex": "^4.1.0"
   },
   "devDependencies": {
