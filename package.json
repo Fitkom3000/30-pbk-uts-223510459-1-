@@ -11,9 +11,14 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "pinia": "^2.1.7",
+    "@quasar/cli": "^2.4.1",
+    "@quasar/extras": "^1.16.11",
+    "axios": "^1.7.2",
+    "pinia": "^2.1.8-beta.0",
+    "quasar": "^2.16.4",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.4.0",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.3.3",
@@ -22,6 +27,7 @@
     "eslint": "^8.49.0",
     "eslint-plugin-vue": "^9.17.0",
     "prettier": "^3.0.3",
+    "sass": "^1.77.6",
     "vite": "^5.1.6"
   }
 }
